@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>layout.html</title>
+
+<meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
+<meta http-equiv="description" content="this is my page">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="themes/icon.css">
+<style type="text/css">
+body {
+	font-size: 12px;
+}
+</style>
+<script type="text/javascript" src="jquery.min.js"></script>
+<script type="text/javascript" src="jquery.easyui.min.js"></script>
+<script type="text/javascript">
+	function urlClick(myTitle,myUrl){
+		var ifExist=$("#myTabs").tabs("exists",myTitle);
+		if(!ifExist){
+			//添加一个选项卡
+			$("#myTabs").tabs("add",{
+				title:myTitle,
+				closable:true,
+				content:'<iframe frameborder=0 width="100%" height="100%" scrolling="no"  src="'+myUrl+'"></iframe>',
+				iconCls:'icon-reload'
+			});
+		}
+		$("#myTabs").tabs("select",myTitle);
+	}
+</script>
+</head>
+
+<body style="margin:1px">
+	<div class="easyui-layout" data-options="fit:true">
+		<!-- 北部只能设置高度  一般不会设置宽度 -->
+		<div data-options="region:'north'" style="height:15%"></div>
+		<div data-options="region:'west',split:true" title="导航菜单" style="width:15%;">
+			<div class="easyui-accordion" style="width:500px;height:300px;">
+				<div title="权限管理" data-options="iconCls:'icon-ok'" style="overflow:auto;padding:10px;">
+					<a href="#" style="text-decoration: none;background-color: yellow;color:black;"><img alt="" src="themes/icons/man.png">用户管理</a><br /> 
+					<a href="javascript:urlClick('菜品管理','crud.html')" style="text-decoration: none;"><img alt="" src="themes/icons/redo.png" style="margin-top:5px;">菜品管理</a><br /> 
+				</div>
+				<div title="系统设置" data-options="iconCls:'icon-search'" style="padding:10px;"></div>
+			</div>
+		</div>
+		<div data-options="region:'center',iconCls:'icon-reload',fit:true">
+			<div id="myTabs" class="easyui-tabs" data-options="fit:true" style="width:700px;height:250px">
+			 	<div title="欢迎使用" style="padding:10px" data-options="iconCls:'icon-search'">
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

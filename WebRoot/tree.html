@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>tree.html</title>
+	
+    <meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
+    <meta http-equiv="description" content="this is my page">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
+	<link rel="stylesheet" type="text/css" href="themes/icon.css">
+	<script type="text/javascript" src="jquery.min.js"></script>
+	<script type="text/javascript" src="jquery.easyui.min.js"></script>
+    <!--<link rel="stylesheet" type="text/css" href="./styles.css">-->
+	<script type="text/javascript">
+		//根据员工姓名查询
+		function queryForm(){
+			var ename=$("#fn").textbox('getValue');
+			//easyui所有的方法的调用是有一定的规则的：控件对象.控件名称('方法名','方法参数')
+			//发起ajax查询
+			$('#dg').datagrid('load',{
+				ename:ename
+			});
+		}
+	
+		
+		//新增保存的方法
+	   function submitInsertForm(){
+			$('#f').form('submit',{
+				url:'emp',
+				success:function(msg){
+				msg=JSON.parse(msg);
+					if(msg.code==1){
+						$.messager.alert('提示消息','新增成功');  
+						queryForm();
+						$("#x").window('close');
+					}else{
+						$.messager.alert('错误消息',msg.message);
+					}
+				}
+			});
+		}
+	
+	
+	  //修改保存的方法
+	  function submitUpdateForm(){
+	  //获取当前选中行的数据
+		var selectedRow=$("#dg").datagrid("getSelected");
+		var eid=selectedRow.eid;
+		$('#ff').form('submit',{
+			url:'emp/'+eid,
+			success:function(msg){
+			msg=JSON.parse(msg);
+				if(msg.code==1){
+						$.messager.alert('提示消息','修改成功');  
+						queryForm();
+						$("#w").window('close');
+					}else{
+						$.messager.alert('错误消息',msg.message);
+					}
+			}
+		})
+	}	
+	
+		$(function(){
+			$("#tt").tree({
+				onSelect:function(node){
+					var id =node.id;
+					//发送ajax请求
+					$("#dg").datagrid("load",{
+						id:id
+					})
+				}
+			});
+			
+			$('#dg').datagrid({
+				toolbar:[{
+					iconCls:'icon-add',
+					text:'新增',
+					onClick:function(){
+						$("#x").window('open');
+					}
+				},{
+					iconCls:'icon-edit',
+					text:'修改',
+					onClick:function(){
+						 //获取当前选中的行 返回的是一个json对象
+						var selectedRow=$("#dg").datagrid('getSelected');
+						if(selectedRow==null){
+							$.messager.alert('提示消息','请选择一行数据');
+							return;
+						}
+						$("#w").window('open');
+						//会自动把数据带到文本框中
+						$("#ff").form('load',selectedRow);
+					}
+				},{
+					iconCls:'icon-remove',
+					text:'删除',
+					onClick:function(){
+						//获取当前选中的行 返回的是一个json对象
+						var selectedRow=$("#dg").datagrid('getSelected');
+						if(selectedRow==null){
+							$.messager.alert('提示消息','请选择一行数据');
+							return;
+						}
+						//获取id
+						var eid=selectedRow.eid;
+						$.ajax({
+							url:'emp/'+eid,
+							method:'POST',
+							data:'_method=delete',
+							dataType:'json',
+							success:function(msg){
+								if(msg.code==1){
+									$.messager.alert('提示消息','删除成功');
+									queryForm();
+								}else{
+									$.messager.alert('错误消息',msg.message);
+								}
+							}
+						});
+					}
+				}]
+			});
+		});
+	</script>
+  </head>
+  
+  <body>
+   
+	<div class="easyui-layout" data-options="fit:true">
+		<div data-options="region:'west',split:true" title="部门信息" style="width:15%;">
+			<div class="easyui-panel" style="padding:5px">
+				<ul id="tt" class="easyui-tree" data-options="url:'queryDept',method:'get'"></ul>
+			</div>
+		</div>
+		<div data-options="region:'center',iconCls:'icon-man',fit:true" title="员工信息"> 
+			 员工姓名1:<input id="fn" class="easyui-textbox" type="text" name="ename" data-options="required:true"></input><a href="javascript:void(0)" class="easyui-linkbutton" onclick="queryForm()">查询</a>
+			<table id="dg" class="easyui-datagrid" title="Basic DataGrid" style="width:500px;height:250px" data-options="singleSelect:true,rownumbers:true,pagination:true,collapsible:true,url:'queryEmp',method:'get'">
+				<thead>
+					<tr>
+						<th data-options="field:'eid',width:90">员工编号</th>
+						<th data-options="field:'ename',width:100">员工姓名</th>
+						<th data-options="field:'esal',width:80">员工薪水</th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	</div>
+	
+	<!-- 新增 -->
+	<div id="x" class="easyui-window" title="新增员工信息" data-options="iconCls:'icon-add',closed:true" style="width:300px;height:250px;padding:5px;">
+		<div class="easyui-layout" data-options="fit:true">
+		   <form id="f" method="post" ">
+			 <input type="hidden" name="_method" value="POST"/>
+	    	 <table cellpadding="5">
+	    		<tr>
+	    			<td>员工部门:</td>
+	    			<td><input class="easyui-textbox" type="text" name="did" data-options="required:true,missingMessage:'请输入员工部门'"></input></td>
+	    		</tr>
+	    		<tr>
+	    			<td>员工姓名:</td>
+	    			<td><input class="easyui-textbox" type="text" name="ename" data-options="required:true"></input></td>
+	    		</tr>
+	    		<tr>
+	    			<td>员工薪水:</td>
+	    			<td><input class="easyui-textbox" type="text" name="esal" data-options="required:true"></input></td>
+	    		</tr>
+	    	</table>
+	    </form>
+	    	<div style="text-align:center;padding:5px">
+	    		<a href="javascript:void(0)" class="easyui-linkbutton" onclick="submitInsertForm()">保存</a>
+	    		<a href="javascript:void(0)" class="easyui-linkbutton" onclick="clearForm()">重置</a>
+	    	</div>
+		</div>
+	</div>
+	
+	
+	<!-- 修改 -->
+	<div id="w" class="easyui-window" title="修改员工信息" data-options="iconCls:'icon-edit',closed:true" style="width:500px;height:200px;padding:5px;">
+		<div class="easyui-layout" data-options="fit:true">
+			 <form id="ff" method="post" >
+			 <input type="hidden" name="_method" value="put"/>
+	    	<table cellpadding="5">
+	    		<tr>
+	    			<td>员工姓名:</td>
+	    			<td><input class="easyui-textbox" type="text" name="ename" data-options="required:true"></input></td>
+	    		</tr>
+	    		<tr>
+	    			<td>员工薪水:</td>
+	    			<td><input class="easyui-textbox" type="text" name="esal" data-options="required:true"></input></td>
+	    		</tr>
+	    		<tr>
+	    			<td>员工部门:</td>
+	    			<td><input class="easyui-textbox" type="text" name="did" data-options="required:true"></input></td>
+	    		</tr>
+	    		
+	    	</table>
+	    </form>
+	    	<div style="text-align:center;padding:5px">
+	    		<a href="javascript:void(0)" class="easyui-linkbutton" onclick="submitUpdateForm()">保存</a>
+	    		<a href="javascript:void(0)" class="easyui-linkbutton" onclick="clearForm()">重置</a>
+	    	</div>
+		</div>
+	</div>
+  </body>
+</html>
